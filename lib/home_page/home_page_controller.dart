@@ -17,16 +17,21 @@ class HomePageController extends GetxController {
 
   final RxList<String> logEntries = RxList();
   final ScrollController scrollController = ScrollController();
-  late StreamSubscription eventSubcription;
+  late StreamSubscription statusSubcription;
 
   late Timer timer;
   @override
   void onInit() {
     super.onInit();
+    initAds();
+  }
+
+  void initAds() async {
+    await Future.delayed(const Duration(seconds: 1));
     timer = Timer.periodic(const Duration(seconds: 1), tick);
     status.bindStream(rewardAdsService.stateStream.stream);
-    eventSubcription = rewardAdsService.eventStream.stream.listen((log) {
-      _addLogEntry(log);
+    statusSubcription = rewardAdsService.stateStream.stream.listen((log) {
+      _addLogEntry(log.name);
     });
     changeAdsMode(test);
   }
@@ -34,7 +39,7 @@ class HomePageController extends GetxController {
   @override
   void onClose() {
     scrollController.dispose();
-    eventSubcription.cancel();
+    statusSubcription.cancel();
     super.dispose();
   }
 
@@ -72,14 +77,14 @@ class HomePageController extends GetxController {
   void showAds() {
     rewardAdsService.showAds(
         place: '',
-        onSuccess: (AdWithoutView adWithoutView, RewardItem reward) {
-          _addLogEntry('Add coin');
+        onUserEarnedReward: (AdWithoutView adWithoutView, RewardItem reward) {
+          _addLogEntry('onUserEarnedReward');
         },
-        onShow: () {
-          _addLogEntry('Show Ads');
+        onPaidEvent: () {
+          _addLogEntry('onPaidEvent');
         },
-        onClose: () {
-          _addLogEntry('On close');
+        fullScreenContentCallback: () {
+          _addLogEntry('fullScreenContentCallback');
         },
         onError: () {
           _addLogEntry('On error');

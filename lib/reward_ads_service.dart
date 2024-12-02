@@ -62,9 +62,10 @@ class RewardAdsService extends ChangeNotifier {
 
   void showAds({
     required String place,
-    required Function(AdWithoutView adWithoutView, RewardItem reward) onSuccess,
-    Function? onShow,
-    Function? onClose,
+    required Function(AdWithoutView adWithoutView, RewardItem reward)
+        onUserEarnedReward,
+    Function? onPaidEvent,
+    Function? fullScreenContentCallback,
     Function? onError,
   }) {
     if (adsState != AdsState.ready || _rewardedAd == null) {
@@ -76,20 +77,20 @@ class RewardAdsService extends ChangeNotifier {
     // Call khi user đóng ads
     _rewardedAd?.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
-        onClose?.call();
+        fullScreenContentCallback?.call();
         loadAds(place);
       },
     );
     // Call ngay khi show ads
     _rewardedAd?.onPaidEvent = (Ad ad, double valueMicros,
         PrecisionType precision, String currencyCode) {
-      onShow?.call();
+      onPaidEvent?.call();
       double value = valueMicros / 1000000;
     };
     _rewardedAd?.show(
       // Call khi user có thể nhận reward (Chưa cần lick tắt quảng cáo)
       onUserEarnedReward: (adWithoutView, reward) {
-        onSuccess(adWithoutView, reward);
+        onUserEarnedReward(adWithoutView, reward);
       },
     );
   }
